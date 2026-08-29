@@ -51,12 +51,15 @@ async function buscarProdutos() {
 
   try {
     const client = window.supabase.createClient(url, anonKey);
+    // Ordena pela coluna "ordem" (posição do item na planilha original do
+    // Leonardo) em vez de ordem alfabética — assim tanto as coleções quanto
+    // os produtos dentro de cada coleção aparecem na mesma ordem de sempre,
+    // que já foi pensada pra facilitar o cliente achar o item.
     const { data, error } = await client
       .from(tabela)
       .select("*")
       .eq("ativo", true)
-      .order("colecao", { ascending: true })
-      .order("descricao", { ascending: true });
+      .order("ordem", { ascending: true });
 
     if (error) throw error;
     if (!data || data.length === 0) {
