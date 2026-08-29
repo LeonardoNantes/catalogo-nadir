@@ -2,7 +2,13 @@
 // LÓGICA DO CATÁLOGO — 3 telas, coleções, carrinho e WhatsApp
 // ============================================================
 
-const carrinho = new Map(); // codigo -> { produto, quantidade }
+// codigo -> { produto, quantidade }
+// "quantidade" aqui é número de CAIXAS FECHADAS (ou de kits/peças únicas
+// quando fracao = 1) — não número de peças individuais. Cada clique no
+// +/- soma ou tira 1 caixa. O preço usado nas contas é sempre o
+// preco_total (preço da caixa já pronto na planilha), pra bater
+// exatamente com o valor que o Leonardo lança no sistema real dele.
+const carrinho = new Map();
 let TODOS_PRODUTOS = [];
 let PRODUTOS_POR_COLECAO = new Map(); // colecao -> [produtos]
 let COLECAO_ATUAL = null; // colecao sendo exibida na tela 2
@@ -133,11 +139,11 @@ function criarCardProduto(produto) {
     card.classList.toggle("produto-card-selecionado", qtd > 0);
   };
   card.querySelector(".qtd-mais").addEventListener("click", () => {
-    alterarQuantidade(produto, produto.fracao, qtdValorEl);
+    alterarQuantidade(produto, 1, qtdValorEl);
     sincronizarDestaque();
   });
   card.querySelector(".qtd-menos").addEventListener("click", () => {
-    alterarQuantidade(produto, -produto.fracao, qtdValorEl);
+    alterarQuantidade(produto, -1, qtdValorEl);
     sincronizarDestaque();
   });
 
@@ -181,7 +187,7 @@ function atualizarContadorCarrinho() {
 
 function calcularTotalCarrinho() {
   let total = 0;
-  carrinho.forEach((item) => (total += item.quantidade * Number(item.produto.preco_unitario)));
+  carrinho.forEach((item) => (total += item.quantidade * Number(item.produto.preco_total)));
   return total;
 }
 
@@ -198,14 +204,16 @@ function renderizarPainelCarrinho() {
     `;
   } else {
     carrinho.forEach(({ produto, quantidade }) => {
-      const subtotal = quantidade * Number(produto.preco_unitario);
+      const rotulo = produto.fracao > 1 ? "cx" : "un.";
+      const precoPorItem = Number(produto.preco_total);
+      const subtotal = quantidade * precoPorItem;
       const linha = document.createElement("div");
       linha.className = "carrinho-item";
       linha.innerHTML = `
         <div class="carrinho-item-info">
           <p class="carrinho-item-nome">${produto.descricao}</p>
           <p class="carrinho-item-codigo">Cód. ${produto.codigo} · ${produto.colecao}</p>
-          <p class="carrinho-item-preco">${quantidade} un. × ${formatarPreco(Number(produto.preco_unitario))} = ${formatarPreco(subtotal)}</p>
+          <p class="carrinho-item-preco">${quantidade} ${rotulo} × ${formatarPreco(precoPorItem)} = ${formatarPreco(subtotal)}</p>
         </div>
         <div class="qtd-seletor">
           <button class="qtd-btn qtd-menos" aria-label="Diminuir quantidade">−</button>
@@ -215,11 +223,11 @@ function renderizarPainelCarrinho() {
       `;
       const qtdValorEl = linha.querySelector(".qtd-valor");
       linha.querySelector(".qtd-mais").addEventListener("click", () => {
-        alterarQuantidade(produto, produto.fracao, qtdValorEl);
+        alterarQuantidade(produto, 1, qtdValorEl);
         renderizarPainelCarrinho();
       });
       linha.querySelector(".qtd-menos").addEventListener("click", () => {
-        alterarQuantidade(produto, -produto.fracao, qtdValorEl);
+        alterarQuantidade(produto, -1, qtdValorEl);
         renderizarPainelCarrinho();
       });
       lista.appendChild(linha);
@@ -262,6 +270,9 @@ function voltarDoCarrinho() {
 // Cód: XXXXXX | Qtd: N | R$XX.XX
 //
 // TOTAL DO PEDIDO: R$XXXX.XX
+// "Qtd" aqui é número de caixas fechadas (ou de kits/peças únicas quando
+// fracao = 1) — o mesmo número que aparece no carrinho, pronto pro
+// Leonardo lançar direto no sistema real, sem precisar converter.
 function montarTextoPedido() {
   const nomeLoja = document.getElementById("input-loja").value.trim();
   const linhas = [`📋 Pedido ${CONFIG.nomeCatalogo}`, `Loja: ${nomeLoja || "Não informada"}`, ""];
@@ -275,7 +286,7 @@ function montarTextoPedido() {
   for (const [colecao, itens] of porColecao) {
     linhas.push(`• ${colecao}`);
     itens.forEach(({ produto, quantidade }) => {
-      const subtotal = quantidade * Number(produto.preco_unitario);
+      const subtotal = quantidade * Number(produto.preco_total);
       linhas.push(`Cód: ${produto.codigo} | Qtd: ${quantidade} | ${formatarPreco(subtotal)}`);
     });
     linhas.push("");
