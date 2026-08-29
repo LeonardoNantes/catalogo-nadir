@@ -35,7 +35,7 @@ async function verificarVendedorAtivo() {
     if (error || !data) return true;
     return data.ativo !== false;
   } catch (erro) {
-    console.error("[Impala] Erro ao checar status do vendedor:", erro);
+    console.error("[Nadir] Erro ao checar status do vendedor:", erro);
     return true;
   }
 }
@@ -45,7 +45,7 @@ async function buscarProdutos() {
 
   const semSupabaseConfigurado = !url || !anonKey;
   if (semSupabaseConfigurado) {
-    console.info("[Impala] Supabase não configurado ainda — usando produtos de exemplo.");
+    console.info("[Nadir] Supabase não configurado ainda — usando produtos de exemplo.");
     return MOCK_PRODUCTS;
   }
 
@@ -60,7 +60,7 @@ async function buscarProdutos() {
 
     if (error) throw error;
     if (!data || data.length === 0) {
-      console.warn("[Impala] Supabase conectou mas não retornou produtos — usando exemplo.");
+      console.warn("[Nadir] Supabase conectou mas não retornou produtos — usando exemplo.");
       return MOCK_PRODUCTS;
     }
 
@@ -71,7 +71,7 @@ async function buscarProdutos() {
       imagem_url: produto.imagem_url || montarUrlImagem(produto.codigo),
     }));
   } catch (erro) {
-    console.error("[Impala] Erro ao buscar produtos no Supabase:", erro);
+    console.error("[Nadir] Erro ao buscar produtos no Supabase:", erro);
     return MOCK_PRODUCTS;
   }
 }

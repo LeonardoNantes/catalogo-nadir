@@ -83,6 +83,22 @@ function abrirColecao(colecao) {
   mostrarTela("tela-colecao");
 }
 
+// Produtos vendidos só em caixa fechada com mais de 1 unidade (fracao > 1)
+// mostram uma legenda extra com o preço da caixa, além do preço unitário em
+// destaque. Quando fracao = 1 (item vendido como peça/kit único), essa
+// legenda não aparece — mostrar as duas seria redundante.
+function montarBlocoPreco(produto) {
+  const precoUnitario = formatarPreco(Number(produto.preco_unitario));
+  if (produto.fracao > 1) {
+    const precoCaixa = formatarPreco(Number(produto.preco_total));
+    return `
+      <span class="produto-preco">${precoUnitario} cada</span>
+      <span class="produto-preco-caixa">Caixa c/ ${produto.fracao} un. · ${precoCaixa}</span>
+    `;
+  }
+  return `<span class="produto-preco">${precoUnitario} cada</span>`;
+}
+
 function criarCardProduto(produto) {
   const card = document.createElement("article");
   card.className = "produto-card";
@@ -99,7 +115,9 @@ function criarCardProduto(produto) {
       <h3 class="produto-nome">${produto.descricao}</h3>
       <p class="produto-codigos">Código: ${produto.codigo}${produto.codigo_barras ? ` | Cod.Barra: ${produto.codigo_barras}` : ""}</p>
       <div class="produto-preco-qtd">
-        <span class="produto-preco">${formatarPreco(Number(produto.preco_unitario))} cada</span>
+        <div class="produto-preco-bloco">
+          ${montarBlocoPreco(produto)}
+        </div>
         <div class="qtd-seletor">
           <button class="qtd-btn qtd-menos" aria-label="Diminuir quantidade">−</button>
           <span class="qtd-valor">${quantidadeAtual}</span>
@@ -237,7 +255,7 @@ function voltarDoCarrinho() {
 
 // ---------- Envio do pedido pelo WhatsApp ----------
 // Formato definido pelo Leonardo:
-// 📋 Pedido Loja Impala
+// 📋 Pedido Loja Nadir
 // Loja: [nome da loja]
 //
 // • NOME DA COLEÇÃO

@@ -1,5 +1,5 @@
 /* ============================================================
-   ESTILO DO CATÁLOGO IMPALA — 3 telas (inicial, coleção, carrinho)
+   ESTILO DO CATÁLOGO NADIR — 3 telas (inicial, coleção, carrinho)
    Cores em variáveis, controladas por config.js
    ============================================================ */
 
@@ -412,11 +412,26 @@ body {
   margin-top: 2px;
 }
 
+.produto-preco-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
 .produto-preco {
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--cor-primaria);
   white-space: nowrap;
+}
+
+.produto-preco-caixa {
+  font-size: 0.66rem;
+  color: var(--cor-texto-suave);
+  line-height: 1.2;
+  white-space: normal;
 }
 
 .qtd-seletor {

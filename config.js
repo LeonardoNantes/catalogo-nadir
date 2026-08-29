@@ -10,12 +10,12 @@ const CONFIG = {
   // ---- Identificador único deste catálogo (marca + vendedor) ----
   // Usado pra checar na tabela "vendedores" se este catálogo está ativo
   // (assinatura em dia) ou pausado. Cada vendedor de cada marca tem o seu.
-  vendedorId: "impala-leonardo",
+  vendedorId: "nadir-leonardo",
 
   // ---- Marca / catálogo ----
-  marca: "Impala",
-  nomeCatalogo: "Loja Impala",
-  sloganMarca: "💅 Impala, a cor da sua moda! 💅",
+  marca: "Nadir",
+  nomeCatalogo: "Loja Nadir",
+  sloganMarca: "🍽️ Nadir, o toque especial da sua mesa! 🍽️",
 
   // ---- Dados do vendedor (aparecem no cabeçalho e no link do WhatsApp) ----
   vendedor: {
@@ -27,22 +27,20 @@ const CONFIG = {
   },
 
   // ---- Cores da marca (usadas no cabeçalho e nos botões) ----
-  corPrimaria: "#1a1a2e", // fundo do cabeçalho
-  corDestaque: "#e91e63", // botão de enviar pedido, destaques
+  corPrimaria: "#0d2c4a", // fundo do cabeçalho — azul-marinho (linha Marinex/vidro)
+  corDestaque: "#d99a3a", // botão de enviar pedido, destaques — âmbar/dourado
   corDourada: "#d4af37", // borda discreta da foto do vendedor
 
-  // Paleta dos cards de coleção — tons de rosa/magenta/dourado da Impala,
-  // alternados entre os cards pra dar variedade sem fugir da marca.
-  paletaCards: ["#c2185b", "#e91e63", "#ad1457", "#f06292", "#9c27b0"],
+  // Paleta dos cards de coleção — tons de azul-petróleo/marinho, com um
+  // tom âmbar de vez em quando pra dar variedade sem fugir do tema.
+  paletaCards: ["#0d2c4a", "#155a8a", "#1c6ea4", "#2f8fc4", "#8a6d3b"],
 
   // ---- Supabase ----
-  // Deixe em branco ("") enquanto o Supabase não estiver configurado.
-  // O app funciona com produtos de exemplo (mock) até essas credenciais
-  // serem preenchidas — assim dá pra testar o catálogo sem depender do banco.
+  // Mesmo projeto Supabase usado no Impala — só muda a tabela e o bucket.
   supabase: {
     url: "https://eubbzefshftafjjcirna.supabase.co",
     anonKey: "sb_publishable_GZ-duizLJSQSVcdYejzWGQ_wdNUu8vA",
-    tabela: "impala", // nome da tabela de produtos da Impala no Supabase
-    bucketImagens: "produtos-impala", // bucket público com as fotos, nomeadas pelo código
+    tabela: "nadir", // nome da tabela de produtos do Nadir no Supabase
+    bucketImagens: "produtos-nadir", // bucket público com as fotos, nomeadas pelo código
   },
 };
