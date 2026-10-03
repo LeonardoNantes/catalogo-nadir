@@ -7,11 +7,14 @@
 // em itálico/negrito, etiqueta de preço ancorada no rodapé do cartão.
 //
 // Diferença importante em relação ao Impala: aqui o carrinho conta CAIXAS
-// FECHADAS, não peças — então o preço mostrado em cada cartão é sempre o
-// preco_total (preço da caixa já pronto na planilha), com a etiqueta "cx"
-// quando o item vem em caixa com mais de 1 unidade, ou "un." quando é
-// peça/kit único (fracao = 1) — mesmo critério já usado no carrinho normal
-// do app (ver montarBlocoPreco em app.js).
+// FECHADAS, não peças. Mas o preço mostrado nos cartões da Imagem e do PDF
+// de ofertas (grade com fotos) é sempre o preco_unitario (preço da peça
+// avulsa), etiqueta "un." fixa — é o valor que funciona como propaganda pro
+// cliente, independente de quantas caixas estão no carrinho. Já o "PDF do
+// pedido" (cópia de texto do pedido, sem fotos) continua usando o
+// preco_total (preço da caixa) e a etiqueta "cx"/"un." dinâmica, porque ali
+// o valor precisa bater com o total real do pedido — mesmo critério já
+// usado no carrinho normal do app (ver montarBlocoPreco em app.js).
 
 const EXPORT_TEMPLATE_CAMINHO = "template-nadir.jpg";
 const EXPORT_TEMPLATE_LARGURA = 1414;
@@ -230,8 +233,8 @@ function exportarDesenharGradeDeCartoes(ctx, itens, imagensProdutos, opcoes) {
       ctx.fill();
     }
 
-    const precoTexto = exportarFormatarPrecoSemPrefixo(item.preco_total);
-    const rotulo = exportarRotuloItem(item);
+    const precoTexto = exportarFormatarPrecoSemPrefixo(item.preco_unitario);
+    const rotulo = "un.";
     const alturaBadge = EXPORT_GRADE_ALTURA_BADGE;
     const larguraBadge = larguraFoto;
     const xBadge = x + padCard;
@@ -587,8 +590,8 @@ async function exportarGerarPdfCarrinho() {
         doc.rect(x + padCard, y + padCard, larguraFoto, alturaFoto, "F");
       }
 
-      const precoTexto = exportarFormatarPrecoSemPrefixo(item.preco_total);
-      const rotulo = exportarRotuloItem(item);
+      const precoTexto = exportarFormatarPrecoSemPrefixo(item.preco_unitario);
+      const rotulo = "un.";
       const larguraBadge = larguraFoto;
       const xBadge = x + padCard;
       const yBadge = y + alturaCard - padCard - alturaBadge;
