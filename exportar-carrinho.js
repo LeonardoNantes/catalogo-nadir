@@ -53,8 +53,11 @@ const EXPORT_GRADE_ALTURA_BADGE = 52;
 // tamanho dos cartões nem no espaço entre eles.
 const EXPORT_GRADE_FATOR_ALTURA_FOTO = 0.93;
 // Mesma ideia, só que pro PDF (que usa milímetros em vez de pixels, e
-// fontes um pouco maiores proporcionalmente).
-const EXPORT_PDF_FATOR_ALTURA_FOTO = 0.84;
+// fontes um pouco maiores proporcionalmente). Ajustado pra usar o espaço
+// que sobrou ao diminuir o gutterV entre fileiras (ver gutterV dentro de
+// exportarGerarPdfCarrinho) — ficando bem perto da proporção de foto já
+// usada na Imagem (0,93).
+const EXPORT_PDF_FATOR_ALTURA_FOTO = 0.92;
 // Cor da etiqueta de preço nos cartões — tom azul-marinho do próprio logo
 // do Nadir (igual à corPrimaria do app), com o mesmo brilho dourado suave
 // usado na foto do vendedor.
@@ -240,10 +243,10 @@ function exportarDesenharGradeDeCartoes(ctx, itens, imagensProdutos, opcoes) {
     const xBadge = x + padCard;
     const yBadge = y + alturaCard - padCard - alturaBadge;
 
-    ctx.font = "600 11px 'Inter', sans-serif";
+    ctx.font = "600 17.1px 'Inter', sans-serif";
     const linhaCodigo = exportarQuebrarTextoCanvas(ctx, `Cód. ${item.codigo}`, larguraFoto, 1)[0];
 
-    ctx.font = "italic 700 15px 'Playfair Display', serif";
+    ctx.font = "italic 700 19.72px 'Playfair Display', serif";
     const linhasNome = exportarQuebrarTextoCanvas(ctx, item.descricao, larguraFoto, EXPORT_GRADE_MAX_LINHAS_NOME);
 
     const gapCodigoBadge = EXPORT_GRADE_GAP_CODIGO_BADGE;
@@ -255,11 +258,11 @@ function exportarDesenharGradeDeCartoes(ctx, itens, imagensProdutos, opcoes) {
     const yPrimeiraLinhaNome = yUltimaLinhaNome - (linhasNome.length - 1) * linhaAlturaNome;
 
     ctx.fillStyle = "#1E1E1E";
-    ctx.font = "italic 700 15px 'Playfair Display', serif";
+    ctx.font = "italic 700 19.72px 'Playfair Display', serif";
     linhasNome.forEach((linha, li) => ctx.fillText(linha, x + padCard, yPrimeiraLinhaNome + li * linhaAlturaNome));
 
     ctx.fillStyle = "#1E1E1E";
-    ctx.font = "600 11px 'Inter', sans-serif";
+    ctx.font = "600 17.1px 'Inter', sans-serif";
     ctx.fillText(linhaCodigo, x + padCard, yCodigo);
 
     ctx.save();
@@ -273,7 +276,7 @@ function exportarDesenharGradeDeCartoes(ctx, itens, imagensProdutos, opcoes) {
     ctx.restore();
 
     ctx.fillStyle = "#FFFFFF";
-    ctx.font = "700 10px 'Inter', sans-serif";
+    ctx.font = "700 15.68px 'Inter', sans-serif";
     ctx.textAlign = "left";
     ctx.fillText("R$", xBadge + 11, yBadge + 16);
     ctx.textAlign = "right";
@@ -281,7 +284,7 @@ function exportarDesenharGradeDeCartoes(ctx, itens, imagensProdutos, opcoes) {
     ctx.fillText(rotulo, xBadge + larguraBadge - 11, yBadge + 16);
 
     ctx.fillStyle = "#FFFFFF";
-    ctx.font = "italic 700 38px 'Playfair Display', serif";
+    ctx.font = "italic 700 35.63px 'Playfair Display', serif";
     ctx.textAlign = "center";
     ctx.fillText(precoTexto, x + larguraCard / 2, yBadge + alturaBadge - 14);
     ctx.textAlign = "left";
@@ -534,7 +537,10 @@ async function exportarGerarPdfCarrinho() {
 
     const colunas = 4;
     const gutterH = 4;
-    const gutterV = 7;
+    // Reduzido de 7mm pra ficar na mesma proporção (gutterV ÷ altura do
+    // card) que a Imagem já usa — o espaço que sobrou virou foto maior
+    // (ver EXPORT_PDF_FATOR_ALTURA_FOTO).
+    const gutterV = 3.35;
     const larguraCard = (larguraUtil - gutterH * (colunas - 1)) / colunas;
     const padCard = 2.2;
     const larguraFoto = larguraCard - padCard * 2;
