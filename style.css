@@ -683,3 +683,53 @@ body {
 @media (min-width: 640px) {
   .grade-colecoes { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ---------- Caixinha de pergunta (carrinho guardado no celular) ---------- */
+.dialogo-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(13, 44, 74, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.dialogo-fundo[hidden] {
+  display: none;
+}
+.dialogo-caixa {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 22px 20px 18px;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+.dialogo-caixa p {
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--cor-primaria);
+  margin: 0 0 18px;
+}
+.dialogo-botoes {
+  display: flex;
+  gap: 10px;
+}
+.dialogo-botoes button {
+  flex: 1;
+  padding: 12px 8px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+.dialogo-nao {
+  background: #f0efe9;
+  color: #3d3d3a;
+}
+.dialogo-sim {
+  background: linear-gradient(135deg, var(--cor-destaque), #b9792a);
+  color: #ffffff;
+}

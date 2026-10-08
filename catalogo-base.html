@@ -184,6 +184,19 @@
     </button>
   </div>
 
+  <!-- Caixinha de pergunta da própria página (carrinho guardado no celular):
+       usada pra "já enviou esse pedido pelo WhatsApp?" e pra confirmar o
+       "Excluir tudo" do carrinho — nunca o confirm()/alert() do navegador. -->
+  <div id="dialogo-fundo" class="dialogo-fundo" hidden>
+    <div class="dialogo-caixa" role="dialog" aria-modal="true">
+      <p id="dialogo-texto"></p>
+      <div class="dialogo-botoes">
+        <button id="dialogo-nao" type="button" class="dialogo-nao"></button>
+        <button id="dialogo-sim" type="button" class="dialogo-sim"></button>
+      </div>
+    </div>
+  </div>
+
   <!-- Supabase JS via CDN (usado apenas se as credenciais forem configuradas em config.js) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <!-- jsPDF (usado pelos botões de gerar PDF) -->

@@ -15,6 +15,101 @@ let PRODUTOS_POR_COLECAO = new Map(); // colecao -> [produtos]
 let COLECAO_ATUAL = null; // colecao sendo exibida na tela 2
 let VENDEDOR_ATUAL = null; // { nome, whatsapp, foto_url, area, ... } do vendedor resolvido nesse acesso
 
+// ---------- Carrinho guardado no celular (localStorage) ----------
+// O carrinho fica guardado no próprio navegador do cliente, numa "gaveta"
+// separada por vendedor (chave com o slug), pra não misturar o carrinho de
+// um vendedor com o de outro. Guarda só código do produto + quantidade (o
+// preço sempre vem atualizado do banco); se um código sair do catálogo, ele
+// é ignorado ao carregar. Não expira sozinho — fica até o cliente limpar.
+// Depois de "Enviar pedido", guarda a hora do envio; quando o cliente volta
+// pra página, pergunta se já enviou e se quer limpar (ver perguntarSeJaEnviou).
+let CHAVE_CARRINHO = null; // definida no iniciar(), por vendedor
+let ENVIADO_EM = null; // hora do último "Enviar pedido" (ou null)
+let PERGUNTA_ENVIO_ABERTA = false;
+
+function salvarCarrinho() {
+  if (!CHAVE_CARRINHO) return;
+  try {
+    const itens = {};
+    carrinho.forEach(({ quantidade }, codigo) => { if (quantidade > 0) itens[codigo] = quantidade; });
+    if (Object.keys(itens).length === 0) {
+      localStorage.removeItem(CHAVE_CARRINHO);
+      ENVIADO_EM = null;
+      return;
+    }
+    localStorage.setItem(CHAVE_CARRINHO, JSON.stringify({ itens, enviadoEm: ENVIADO_EM }));
+  } catch (erro) {
+    // Navegador sem espaço/modo privado: segue funcionando, só não guarda.
+  }
+}
+
+function carregarCarrinhoSalvo() {
+  if (!CHAVE_CARRINHO) return;
+  try {
+    const salvo = JSON.parse(localStorage.getItem(CHAVE_CARRINHO) || "null");
+    if (!salvo || !salvo.itens) return;
+    const produtoPorCodigo = new Map(TODOS_PRODUTOS.map((p) => [String(p.codigo), p]));
+    Object.entries(salvo.itens).forEach(([codigo, quantidade]) => {
+      const produto = produtoPorCodigo.get(String(codigo));
+      const qtd = Math.floor(Number(quantidade));
+      if (produto && qtd > 0) carrinho.set(produto.codigo, { produto, quantidade: qtd });
+    });
+    ENVIADO_EM = salvo.enviadoEm || null;
+    salvarCarrinho(); // já limpa do guardado os códigos que saíram do catálogo
+  } catch (erro) {
+    // Guardado corrompido: ignora e começa do zero.
+  }
+}
+
+// Caixinha de pergunta da própria página (no lugar do confirm() do
+// navegador, que no celular fica feio e às vezes é bloqueado).
+function perguntar(texto, rotuloSim, rotuloNao) {
+  return new Promise((resolve) => {
+    const fundo = document.getElementById("dialogo-fundo");
+    document.getElementById("dialogo-texto").textContent = texto;
+    const sim = document.getElementById("dialogo-sim");
+    const nao = document.getElementById("dialogo-nao");
+    sim.textContent = rotuloSim;
+    nao.textContent = rotuloNao;
+    fundo.hidden = false;
+    const fechar = (resposta) => {
+      fundo.hidden = true;
+      sim.onclick = null;
+      nao.onclick = null;
+      resolve(resposta);
+    };
+    sim.onclick = () => fechar(true);
+    nao.onclick = () => fechar(false);
+  });
+}
+
+// Quando o cliente volta pra página depois de ter tocado em "Enviar pedido"
+// (voltou do WhatsApp, ou abriu o link de novo), pergunta se já enviou.
+// Espera alguns segundos depois do envio pra não perguntar na hora em que o
+// WhatsApp ainda está abrindo.
+async function perguntarSeJaEnviou() {
+  if (!ENVIADO_EM || PERGUNTA_ENVIO_ABERTA || carrinho.size === 0) return;
+  if (Date.now() - ENVIADO_EM < 4000) return;
+  PERGUNTA_ENVIO_ABERTA = true;
+  const limpar = await perguntar(
+    "Você já enviou esse pedido pelo WhatsApp? Quer limpar o carrinho pra começar outro?",
+    "Sim, limpar",
+    "Não, manter"
+  );
+  PERGUNTA_ENVIO_ABERTA = false;
+  if (limpar) {
+    carrinho.clear();
+    atualizarContadorCarrinho();
+    renderizarPainelCarrinho();
+    if (COLECAO_ATUAL) renderizarGradeProdutos(PRODUTOS_POR_COLECAO.get(COLECAO_ATUAL) || []);
+  }
+  ENVIADO_EM = null;
+  salvarCarrinho();
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") perguntarSeJaEnviou();
+});
+
 // ---------- Formatação ----------
 function formatarPreco(valor) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -184,6 +279,12 @@ function alterarQuantidade(produto, delta, qtdValorEl) {
 
   qtdValorEl.textContent = nova;
   atualizarContadorCarrinho();
+
+  // Qualquer mudança no carrinho depois de um envio quer dizer que o
+  // cliente continuou montando — a pergunta "já enviou?" deixa de fazer
+  // sentido, então é resetada aqui antes de salvar.
+  ENVIADO_EM = null;
+  salvarCarrinho();
 }
 
 function atualizarContadorCarrinho() {
@@ -250,13 +351,20 @@ function renderizarPainelCarrinho() {
   document.getElementById("carrinho-total-valor").textContent = formatarPreco(calcularTotalCarrinho());
 }
 
-function limparCarrinho() {
+async function limparCarrinho() {
   if (carrinho.size === 0) return;
-  const confirmar = confirm("Excluir todos os itens do carrinho?");
+  const total = carrinho.size;
+  const confirmar = await perguntar(
+    `Desmarcar ${total === 1 ? "o item marcado" : `todos os ${total} itens marcados`} do carrinho?`,
+    "Sim, desmarcar",
+    "Cancelar"
+  );
   if (!confirmar) return;
   carrinho.clear();
   atualizarContadorCarrinho();
   renderizarPainelCarrinho();
+  ENVIADO_EM = null;
+  salvarCarrinho();
 }
 
 function abrirCarrinho() {
@@ -321,6 +429,8 @@ function enviarPedidoWhatsapp() {
   }
   const texto = encodeURIComponent(montarTextoPedido());
   const url = `https://wa.me/${whatsappVendedor}?text=${texto}`;
+  ENVIADO_EM = Date.now();
+  salvarCarrinho();
   window.open(url, "_blank");
 }
 
@@ -384,6 +494,11 @@ async function iniciar() {
   TODOS_PRODUTOS = await buscarProdutos(statusVendedor.area);
   PRODUTOS_POR_COLECAO = agruparPorColecao(TODOS_PRODUTOS);
 
+  // Recupera o carrinho guardado no celular pra ESSE vendedor (se tiver).
+  CHAVE_CARRINHO = `nadir-carrinho:${vendedorId}`;
+  carregarCarrinhoSalvo();
+  atualizarContadorCarrinho();
+
   statusMsg.hidden = true;
   renderizarCardsColecao();
 
@@ -395,6 +510,10 @@ async function iniciar() {
 
   carregando.hidden = true;
   mostrarTela("tela-inicial");
+
+  // Se o cliente voltou pra página depois de já ter enviado um pedido
+  // (ex: abriu o link de novo direto do WhatsApp), pergunta se já enviou.
+  perguntarSeJaEnviou();
 }
 
 document.addEventListener("DOMContentLoaded", iniciar);
