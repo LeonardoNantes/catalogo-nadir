@@ -265,25 +265,26 @@ function exportarDesenharGradeDeCartoes(ctx, itens, imagensProdutos, opcoes) {
     ctx.font = "600 17.1px 'Inter', sans-serif";
     ctx.fillText(linhaCodigo, x + padCard, yCodigo);
 
-    ctx.save();
-    ctx.shadowColor = "rgba(212,175,55,0.45)";
-    ctx.shadowBlur = 10;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-    ctx.fillStyle = EXPORT_COR_BADGE;
+    // Selo vazado (contorno azul-marinho, fundo branco) — mesmo efeito de
+    // etiqueta de preço de antes, só que sem a área preenchida, pra gastar
+    // bem menos tinta na hora de imprimir (pedido explícito do Leonardo, já
+    // aprovado no catálogo Ofertas da Semana).
+    ctx.lineWidth = 2.6;
+    ctx.strokeStyle = EXPORT_COR_BADGE;
+    ctx.fillStyle = "#FFFFFF";
     exportarDesenharRetanguloArredondado(ctx, xBadge, yBadge, larguraBadge, alturaBadge, 10);
     ctx.fill();
-    ctx.restore();
+    ctx.stroke();
 
-    ctx.fillStyle = "#FFFFFF";
+    ctx.fillStyle = EXPORT_COR_BADGE;
     ctx.font = "700 15.68px 'Inter', sans-serif";
     ctx.textAlign = "left";
     ctx.fillText("R$", xBadge + 11, yBadge + 16);
     ctx.textAlign = "right";
-    ctx.fillStyle = "#cfd9e3";
+    ctx.fillStyle = "#9eabb7";
     ctx.fillText(rotulo, xBadge + larguraBadge - 11, yBadge + 16);
 
-    ctx.fillStyle = "#FFFFFF";
+    ctx.fillStyle = EXPORT_COR_BADGE;
     ctx.font = "italic 700 35.63px 'Playfair Display', serif";
     ctx.textAlign = "center";
     ctx.fillText(precoTexto, x + larguraCard / 2, yBadge + alturaBadge - 14);
@@ -632,19 +633,25 @@ async function exportarGerarPdfCarrinho() {
       doc.setFontSize(7.2);
       doc.text(linhaCodigo, x + padCard, yCodigo);
 
-      doc.setFillColor(13, 44, 74);
-      doc.roundedRect(xBadge, yBadge, larguraBadge, alturaBadge, 1.6, 1.6, "F");
+      // Selo vazado (contorno azul-marinho, fundo branco) — mesmo efeito de
+      // etiqueta de preço de antes, só que sem a área preenchida, pra
+      // gastar bem menos tinta na hora de imprimir (pedido explícito do
+      // Leonardo, já aprovado no catálogo Ofertas da Semana).
+      doc.setDrawColor(13, 44, 74);
+      doc.setFillColor(255, 255, 255);
+      doc.setLineWidth(0.35);
+      doc.roundedRect(xBadge, yBadge, larguraBadge, alturaBadge, 1.6, 1.6, "FD");
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(6.6);
-      doc.setTextColor(255, 255, 255);
+      doc.setTextColor(13, 44, 74);
       doc.text("R$", xBadge + 2, yBadge + 3.4);
-      doc.setTextColor(207, 217, 227);
+      doc.setTextColor(158, 171, 183);
       doc.text(rotulo, xBadge + larguraBadge - 2, yBadge + 3.4, { align: "right" });
 
       doc.setFont("helvetica", "bolditalic");
       doc.setFontSize(15);
-      doc.setTextColor(255, 255, 255);
+      doc.setTextColor(13, 44, 74);
       doc.text(precoTexto, x + larguraCard / 2, yBadge + alturaBadge - 3, { align: "center" });
 
       coluna++;
